@@ -1,0 +1,252 @@
+import json
+import requests
+from bs4 import BeautifulSoup
+from actor import Actor
+from crew import Crew
+from release import Release
+
+
+# todo implement to get all reviews
+# todo implement to get all fans - or at least the count
+# todo implement a way to get a movie directly like from url
+# todo implement releases
+
+
+class Movie:
+    def __init__(self, title, year, director, link):
+        self._title = title
+        self._year = year
+        self._director = director
+        self._link = link
+
+    @property
+    def title(self):
+        return self._title
+
+    @property
+    def year(self):
+        return self._year
+
+    @property
+    def director(self):
+        return self._director
+
+    @property
+    def link(self):
+        return self._link
+
+    def load_detail(self, session):
+        url = f'https://letterboxd.com{self._link}'
+
+        headers = {
+            "sec-ch-ua": '"Chromium";v="118", "Google Chrome";v="118", "Not=A?Brand";v="99"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"Windows"',
+            "upgrade-insecure-requests": "1",
+            "dnt": "1",
+            "user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+            "accept": 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            "sec-fetch-site": "same-origin",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-user": "?1",
+            "sec-fetch-dest": "document",
+            "referer": 'https://letterboxd.com/',
+            "accept-encoding": 'gzip, deflate, br',
+            "accept-language": 'de,en-US;q=0.9,en;q=0.8,de-DE;q=0.7,sr;q=0.6,ko;q=0.5',
+            "cookie": f'com.xk72.webparts.csrf={session.csrf}];',
+            "sec-gpc": '1'
+        }
+
+        response = requests.get(url, headers=headers, cookies=session.cookies)
+        # print(response.status_code)
+        # print(response.text)
+
+        return self._parse_html(response.text)
+
+        # todo - debug purposes
+        # response = self.debug()
+        # self._parse_html(response)
+
+    def _parse_html(self, html):
+        soup = BeautifulSoup(html, 'html.parser')
+
+        self.tagline = soup.find('h4', class_='tagline').text
+        self.summary = soup.find('div', class_='truncate').find('p').text
+        self.film_id = self._extract_film_id(soup)
+        self.cast = self._extract_cast(soup)
+        self.crew = self._extract_crew(soup)
+        self.details = self._extract_detail(soup)
+        self.genres = self._extract_genres(soup)
+        self.releases = self._extract_releases(soup)
+        self._extract_ratings(soup)
+
+    def _extract_film_id(self, soup):
+        poster_div = soup.find('div', class_='film-poster')
+        film_id = poster_div['data-film-id']
+        return film_id
+
+    def _extract_cast(self, soup):
+        cast_container = soup.find('div', id='tab-cast')
+        cast_links = cast_container.find_all('a', class_='text-slug tooltip')
+        # cast = [link.text for link in cast_links]
+
+        cast = []
+        for link in cast_links:
+            actor = Actor(link.text)
+            cast.append(actor)
+
+        return cast
+
+    def _extract_crew(self, soup):
+        crew_container = soup.find('div', id='tab-crew')
+
+        crew = []
+
+        for h3 in crew_container.find_all('h3'):
+            crew_role = h3.find('span', class_='crewrole -full').text
+            crew_names = [a.text for a in h3.find_next('p').find_all('a')]
+
+            for crew_name in crew_names:
+                crew_member = Crew(crew_name, crew_role)
+                crew.append(crew_member)
+
+        return crew
+
+    def _extract_detail(self, soup):
+        # todo - maybe create proper classes for this
+        details = {}
+
+        tab_details = soup.find('div', {'id': 'tab-details'})
+
+        if tab_details:
+            categories = tab_details.find_all('h3')
+            for category in categories:
+                category_name = category.find('span').text
+                if category_name == 'Alternative Titles':
+                    alternative_titles = category.find_next('div', {'class': 'text-indentedlist'}).find(
+                        'p').text.strip().split(', ')
+                    details[category_name] = alternative_titles
+                else:
+                    items = category.find_next('div').find_all('a', {'class': 'text-slug'})
+                    item_names = [item.text for item in items]
+                    details[category_name] = item_names
+
+        return details
+
+    def _extract_genres(self, soup):
+        tab_genres = soup.find('div', {'id': 'tab-genres'})
+
+        if tab_genres:
+            h3 = tab_genres.find('h3')
+            if h3 and h3.find('span').text == 'Genres':
+                genre_links = tab_genres.find_all('a', {'class': 'text-slug'})
+                genres = [link.text for link in genre_links]
+                return genres
+
+        return None
+
+    def _extract_releases(self, soup):
+        # todo - implement
+        return
+
+        # releases = []
+        #
+        # release_sections = soup.find_all('div', class_='release-table -bydate')
+        #
+        # for section in release_sections:
+        #     release_title = section.find_previous('h3',class_='release-table-title')
+        #     release_type = release_title.text.strip()
+        #
+        #     countries = section.find_all('span', class_='name')
+        #     countries = [country.text.strip() for country in countries]
+        #     dates = section.find_all('h5', class_='date')
+        #     dates = [date.text.strip() for date in dates]
+        #
+        #     for country, date in zip(countries, dates):
+        #         release = Release(release_type, country, date)
+        #         releases.append(release)
+        #
+        # return releases
+
+        release_info = soup.find_all('div', class_='release-table -bycountry')
+        release_data = []
+
+        for info in release_info:
+            countries = info.find_all('span', class_='name')
+            dates = info.find_all('h6', class_='date')
+            certifications = info.find_all('span', class_='release-certification-badge')
+            types = info.find_all('span', class_='type')
+            notes = info.find_all('span', class_='release-note')
+
+            for country, date, cert, release_type, note in zip(countries, dates, certifications, types, notes):
+                country = country.text.strip()
+                date = date.text.strip()
+                certification = cert.text.strip() if cert else None
+                release_type = release_type.text.strip()
+                note = note.text.strip() if note else None
+
+                release = {
+                    'Country': country,
+                    'Date': date,
+                    'Certification': certification,
+                    'Release Type': release_type,
+                    'Note': note
+                }
+
+                release_data.append(release)
+
+        return release_data
+
+    def _extract_ratings(self, soup):
+        json_script = soup.find('script', {'type': 'application/ld+json'}).string
+        json_script = json_script.replace("/* <![CDATA[ */", "").replace("/* ]]> */", "")
+        data = json.loads(json_script)
+
+        self.rating = data['aggregateRating']['ratingValue']
+        self.best_rating = data['aggregateRating']['bestRating']
+        self.worst_rating = data['aggregateRating']['worstRating']
+        self.total_rating_count = data['aggregateRating']['ratingCount']
+        self.total_review_count = data['aggregateRating']['reviewCount']
+        self.total_rating_count = data['aggregateRating']['ratingCount']
+
+    def log(self, session, rating=0, date=None, rewatch=False, liked=False, review=None, tags=None):
+        """
+        This will create a log in the diary of the logged-in user.
+
+        :param session: The session of the logged-in user
+        :param rating: The rating to save in the diary. 0 = Zero stars, 10 = Five stars
+        :param date: The date when the film was watched in the format: yyyy-MM-dd
+        :param rewatch: True if the film was watched before
+        :param liked: True if the liked (heart) icon should be checked
+        :param review: If a text is given, it will be saved as a review
+        :param tags: If a tag is given, it will get added to the diary
+        :return: Returns true if the film was logged
+        """
+
+        if -1 < rating > 10:
+            raise Exception('invalid rating')
+
+        url = 'https://letterboxd.com/s/save-diary-entry'
+
+        headers = session.build_headers()
+
+        data = {
+            "__csrf": session.csrf,
+            "viewingId": "",
+            "filmId": self.film_id,
+            "specifiedDate": 'true' if date else 'false',
+            "rewatch": 'true' if rewatch else 'false',
+            "viewingDateStr": date or '',
+            "review": review or '',
+            "tags": tags or '',
+            "liked": 'true' if liked else 'false',
+            "rating": rating
+        }
+
+        response = requests.post(url, headers=headers, data=data)
+
+        if response.status_code == 200:
+            print("logged movie")
+            return True
+
+        return False
