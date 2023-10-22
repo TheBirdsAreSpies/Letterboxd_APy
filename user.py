@@ -1,0 +1,59 @@
+import requests
+from bs4 import BeautifulSoup
+from movie import Movie
+
+
+class User:
+    # todo implement watchlist
+    # todo implement get diary
+    # todo implement get list
+    # todo add movie to list
+    # todo create new list
+
+    # todo recent activity
+    # todo watched films
+    # todo films this year
+    # todo lists
+    # todo following
+    # todo followers
+    # todo bio
+    # todo diary
+    # todo ratings
+    # todo tags
+    # todo reviews
+    # todo watchlist
+    # todo lists
+    # todo likes
+    # todo stats
+
+    def __init__(self, username, session):
+        self._username = username
+        self._session = session
+
+    def load_detail(self):
+        url = f'https://letterboxd.com/{self._username}'
+
+        headers = self._session.build_headers()
+        response = requests.get(url, headers=headers)
+
+        return self._parse_html(response.text)
+
+    def _parse_html(self, html):
+        soup = BeautifulSoup(html, 'html.parser')
+
+        self.favorite_films = self._extract_favorite_films(soup)
+
+    def _extract_favorite_films(self, soup):
+        favorite_films = []
+
+        favorites_section = soup.find('section', {'id': 'favourites'})
+        favorite_items = favorites_section.find_all('li', {'class': 'poster-container favourite-film-poster-container'})
+
+        for item in favorite_items:
+            film_slug = item.find('div', {'class': 'really-lazy-load'})['data-film-slug']
+
+            film = Movie(f'/film/{film_slug}')
+            film.load_detail(self._session)
+            favorite_films.append(film)
+
+        return favorite_films
