@@ -15,26 +15,10 @@ from release import Release
 
 class Movie:
     def __init__(self, link, title='', year=-1):
+        self._link = link
         self._title = title
         self._year = year
-        self._link = link
         self._runtime = -1
-
-    @property
-    def title(self):
-        return self._title
-
-    @property
-    def year(self):
-        return self._year
-
-    @property
-    def link(self):
-        return self._link
-
-    @property
-    def runtime(self):
-        return self._runtime
 
     def load_detail(self, session):
         url = f'https://letterboxd.com{self._link}'
@@ -254,4 +238,52 @@ class Movie:
         if self.title and self.year:
             return f'{self._title} ({self.year})]'
 
-        return super.__repr__(self)
+        return self._link
+
+    @property
+    def title(self):
+        return self._title
+
+    @property
+    def year(self):
+        return self._year
+
+    @property
+    def link(self):
+        return self._link
+
+    @property
+    def runtime(self):
+        return self._runtime
+
+    @property
+    def tagline(self):
+        return self._tagline
+
+    @property
+    def summary(self):
+        return self._summary
+
+    @property
+    def film_id(self):
+        return self._film_id
+
+    @property
+    def cast(self):
+        return self._cast
+
+    @property
+    def crew(self):
+        return self._crew
+
+    @property
+    def details(self):
+        return self._details
+
+    @property
+    def genres(self):
+        return self._genres
+
+    @property
+    def releases(self):
+        return self._releases
