@@ -1,15 +1,17 @@
 class Session:
-    def __init__(self, csrf, cookies):
-        self._csrf = csrf
+    _instance = None
+    _csrf = None
+    _cookies = None
+
+    def __new__(cls, csrf=None, cookies=None):
+        if cls._instance is None:
+            cls._instance = super(Session, cls).__new__(cls)
+            cls._instance.init_session(csrf, cookies)
+        return cls._instance
+
+    def init_session(self, csrf, cookies):
+        self.csrf = csrf
         self.cookies = cookies
-
-    @property
-    def csrf(self):
-        return self._csrf
-
-    @csrf.setter
-    def csrf(self, csrf):
-        self._csrf = csrf
 
     def build_headers(self):
         # we have to build a cookies string because setting the param per request does not work somehow
@@ -30,3 +32,19 @@ class Session:
         }
 
         return headers
+
+    @property
+    def csrf(self):
+        return self._csrf
+
+    @csrf.setter
+    def csrf(self, csrf):
+        self._csrf = csrf
+
+    @property
+    def cookies(self):
+        return self._cookies
+
+    @cookies.setter
+    def cookies(self, cookies):
+        self._cookies = cookies

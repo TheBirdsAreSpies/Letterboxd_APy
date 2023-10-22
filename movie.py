@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from actor import Actor
 from crew import Crew
+from session import Session
 from release import Release
 
 
@@ -20,8 +21,9 @@ class Movie:
         self._year = year
         self._runtime = -1
 
-    def load_detail(self, session):
+    def load_detail(self):
         url = f'https://letterboxd.com{self._link}'
+        session = Session()
 
         response = requests.get(url, headers=session.build_headers(), cookies=session.cookies)
         return self._parse_html(response.text)
@@ -192,11 +194,10 @@ class Movie:
         self.total_review_count = data['aggregateRating']['reviewCount']
         self.total_rating_count = data['aggregateRating']['ratingCount']
 
-    def log(self, session, rating=0, date=None, rewatch=False, liked=False, review=None, tags=None):
+    def log(self, rating=0, date=None, rewatch=False, liked=False, review=None, tags=None):
         """
         This will create a log in the diary of the logged-in user.
 
-        :param session: The session of the logged-in user
         :param rating: The rating to save in the diary. 0 = Zero stars, 10 = Five stars
         :param date: The date when the film was watched in the format: yyyy-MM-dd
         :param rewatch: True if the film was watched before
@@ -211,6 +212,7 @@ class Movie:
 
         url = 'https://letterboxd.com/s/save-diary-entry'
 
+        session = Session()
         headers = session.build_headers()
 
         data = {

@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from movie import Movie
+from session import Session
 
 
 class User:
@@ -26,17 +27,17 @@ class User:
     # todo likes
     # todo stats
 
-    def __init__(self, username, session):
+    def __init__(self, username):
         self._username = username
-        self._session = session
 
     def load_detail(self):
+        session = Session()
         url = f'https://letterboxd.com/{self._username}'
 
-        headers = self._session.build_headers()
+        headers = session.build_headers()
         response = requests.get(url, headers=headers)
 
-        return self._parse_html(response.text)
+        self._parse_html(response.text)
 
     def _parse_html(self, html):
         soup = BeautifulSoup(html, 'html.parser')
@@ -53,7 +54,7 @@ class User:
             film_slug = item.find('div', {'class': 'really-lazy-load'})['data-film-slug']
 
             film = Movie(f'/film/{film_slug}')
-            film.load_detail(self._session)
+            film.load_detail()
             favorite_films.append(film)
 
         return favorite_films
