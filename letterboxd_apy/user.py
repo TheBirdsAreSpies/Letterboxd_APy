@@ -76,7 +76,7 @@ class User:
         else:
             return None
 
-    def download_export_data(self):
+    def download_export_data(self, file_name='letterboxd_export.zip'):
         session = Session()
         url = 'https://letterboxd.com/data/export/'
 
@@ -87,7 +87,7 @@ class User:
             if response.status_code == 200:
                 data = response.content
 
-                with open('letterboxd_export.zip', 'wb') as file:
+                with open(file_name, 'wb') as file:
                     file.write(data)
             else:
                 print("Error while downloading data")
