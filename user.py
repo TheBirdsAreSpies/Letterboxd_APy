@@ -76,5 +76,24 @@ class User:
         else:
             return None
 
+    def download_export_data(self):
+        session = Session()
+        url = 'https://letterboxd.com/data/export/'
+
+        try:
+            headers = session.build_headers()
+            response = requests.get(url, headers=headers)
+
+            if response.status_code == 200:
+                data = response.content
+
+                with open('letterboxd_export.zip', 'wb') as file:
+                    file.write(data)
+            else:
+                print("Error while downloading data")
+
+        except requests.exceptions.RequestException as e:
+            print(f"Unable to get web request: {e}")
+
     def __repr__(self):
         return self._username
