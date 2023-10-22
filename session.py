@@ -22,7 +22,7 @@ class Session:
             "Accept": "*/*",
             "Accept-Language": "de,en-US;q=0.7,en;q=0.3",
             "Accept-Encoding": "gzip, deflate, br",
-            "Referer": "https://letterboxd.com/film/fair-play-2023/",
+            "Referer": "https://letterboxd.com/",
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
             "X-Requested-With": "XMLHttpRequest",
             "Origin": "https://letterboxd.com",
