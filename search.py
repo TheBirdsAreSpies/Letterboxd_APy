@@ -55,7 +55,7 @@ class Search:
                 director_element = li.find('a', class_='text-slug')
                 director = director_element.text.strip() if director_element else None
 
-                movie = Movie(title_text, year, director, title['href'])
+                movie = Movie(title['href'], title_text, year)
                 movie_objects.append(movie)
 
         return movie_objects

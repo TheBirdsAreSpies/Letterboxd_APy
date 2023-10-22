@@ -1,4 +1,5 @@
 import json
+import re
 import requests
 from bs4 import BeautifulSoup
 from actor import Actor
@@ -8,17 +9,16 @@ from release import Release
 
 # todo implement to get all reviews
 # todo implement to get all fans - or at least the count
-# todo implement a way to get a movie directly like from url
 # todo implement releases
 # todo implement delete diary entry
 
 
 class Movie:
-    def __init__(self, title, year, director, link):
+    def __init__(self, link, title='', year=-1):
         self._title = title
         self._year = year
-        self._director = director
         self._link = link
+        self._runtime = -1
 
     @property
     def title(self):
@@ -29,12 +29,12 @@ class Movie:
         return self._year
 
     @property
-    def director(self):
-        return self._director
-
-    @property
     def link(self):
         return self._link
+
+    @property
+    def runtime(self):
+        return self._runtime
 
     def load_detail(self, session):
         url = f'https://letterboxd.com{self._link}'
@@ -45,15 +45,40 @@ class Movie:
     def _parse_html(self, html):
         soup = BeautifulSoup(html, 'html.parser')
 
-        self.tagline = soup.find('h4', class_='tagline').text
-        self.summary = soup.find('div', class_='truncate').find('p').text
-        self.film_id = self._extract_film_id(soup)
-        self.cast = self._extract_cast(soup)
-        self.crew = self._extract_crew(soup)
-        self.details = self._extract_detail(soup)
-        self.genres = self._extract_genres(soup)
-        self.releases = self._extract_releases(soup)
+        self._extract_film_info(soup)
+        self._tagline = soup.find('h4', class_='tagline').text
+        self._summary = soup.find('div', class_='truncate').find('p').text
+        self._film_id = self._extract_film_id(soup)
+        self._cast = self._extract_cast(soup)
+        self._crew = self._extract_crew(soup)
+        self._details = self._extract_detail(soup)
+        self._genres = self._extract_genres(soup)
+        self._releases = self._extract_releases(soup)
         self._extract_ratings(soup)
+
+    def _extract_film_info(self, soup):
+        script_tags = soup.find_all('script')
+
+        for script in script_tags:
+            script_text = script.get_text()
+            match = re.search(r'var filmData = ({.*?});', script_text)
+            if match:
+                film_data_json = match.group(1)
+                film_data = self._convert_to_json(film_data_json)
+
+                self._title = film_data['name']
+                self._year = film_data['releaseYear']
+                self._link = film_data['path']
+                self._runtime = film_data['runTime']
+                return
+
+    def _convert_to_json(self, input_str):
+        json_str = re.sub(r'(\w+):', r'"\1":', input_str)
+        json_str = re.sub(r',(\s*})', r'\1', json_str)
+        try:
+            return json.loads(json_str)
+        except json.JSONDecodeError:
+            pass
 
     def _extract_film_id(self, soup):
         poster_div = soup.find('div', class_='film-poster')
@@ -74,7 +99,6 @@ class Movie:
 
     def _extract_crew(self, soup):
         crew_container = soup.find('div', id='tab-crew')
-
         crew = []
 
         for h3 in crew_container.find_all('h3'):
@@ -208,7 +232,7 @@ class Movie:
         data = {
             "__csrf": session.csrf,
             "viewingId": "",
-            "filmId": self.film_id,
+            "filmId": self._film_id,
             "specifiedDate": 'true' if date else 'false',
             "rewatch": 'true' if rewatch else 'false',
             "viewingDateStr": date or '',
@@ -227,4 +251,7 @@ class Movie:
         return False
 
     def __repr__(self):
-        return f'{self._title} ({self.year})]'
+        if self.title and self.year:
+            return f'{self._title} ({self.year})]'
+
+        return super.__repr__(self)
