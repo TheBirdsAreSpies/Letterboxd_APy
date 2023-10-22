@@ -18,7 +18,6 @@ class User:
     # todo lists
     # todo following
     # todo followers
-    # todo bio
     # todo diary
     # todo ratings
     # todo tags
@@ -44,8 +43,10 @@ class User:
         soup = BeautifulSoup(html, 'html.parser')
 
         self.favorite_films = self._extract_favorite_films(soup)
-        thread_load_favs_details = threading.Thread(target=self.load_favorites_details_async())
+        thread_load_favs_details = threading.Thread(target=self._load_favorites_details_async())
         thread_load_favs_details.start()
+
+        self.biography = self._extract_biography(soup)
 
         thread_load_favs_details.join()
 
@@ -63,7 +64,17 @@ class User:
 
         return favorite_films
 
-    def load_favorites_details_async(self):
+    def _load_favorites_details_async(self):
         for film in self.favorite_films:
             film.load_detail()
 
+    def _extract_biography(self, soup):
+        bio_div = soup.find('div', class_='bio js-bio')
+        if bio_div:
+            bio_text = bio_div.find('p').get_text(strip=True)
+            return bio_text
+        else:
+            return None
+
+    def __repr__(self):
+        return self._username
