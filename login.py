@@ -48,8 +48,6 @@ class Login:
         }
 
         response = requests.post(self.LOGIN_URL, headers=headers, data=data)
-        # print(response.status_code)
-        # print(response.text)
 
         if response.status_code == 200:
             response_data = json.loads(response.text)

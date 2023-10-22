@@ -32,8 +32,6 @@ class Search:
 
         headers = self.session.build_headers()
         response = requests.get(url, headers=headers)
-        # print(response.status_code)
-        # print(response.text)
 
         search_cases = {
             SearchType.FILMS: self._parse_html_films
