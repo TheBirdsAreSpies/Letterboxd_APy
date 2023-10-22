@@ -10,6 +10,7 @@ from release import Release
 # todo implement to get all fans - or at least the count
 # todo implement a way to get a movie directly like from url
 # todo implement releases
+# todo implement delete diary entry
 
 
 class Movie:
@@ -38,34 +39,8 @@ class Movie:
     def load_detail(self, session):
         url = f'https://letterboxd.com{self._link}'
 
-        headers = {
-            "sec-ch-ua": '"Chromium";v="118", "Google Chrome";v="118", "Not=A?Brand";v="99"',
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": '"Windows"',
-            "upgrade-insecure-requests": "1",
-            "dnt": "1",
-            "user-agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
-            "accept": 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-            "sec-fetch-site": "same-origin",
-            "sec-fetch-mode": "navigate",
-            "sec-fetch-user": "?1",
-            "sec-fetch-dest": "document",
-            "referer": 'https://letterboxd.com/',
-            "accept-encoding": 'gzip, deflate, br',
-            "accept-language": 'de,en-US;q=0.9,en;q=0.8,de-DE;q=0.7,sr;q=0.6,ko;q=0.5',
-            "cookie": f'com.xk72.webparts.csrf={session.csrf}];',
-            "sec-gpc": '1'
-        }
-
-        response = requests.get(url, headers=headers, cookies=session.cookies)
-        # print(response.status_code)
-        # print(response.text)
-
+        response = requests.get(url, headers=session.build_headers(), cookies=session.cookies)
         return self._parse_html(response.text)
-
-        # todo - debug purposes
-        # response = self.debug()
-        # self._parse_html(response)
 
     def _parse_html(self, html):
         soup = BeautifulSoup(html, 'html.parser')
