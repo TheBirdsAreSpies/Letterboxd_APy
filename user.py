@@ -1,3 +1,4 @@
+import threading
 import requests
 from bs4 import BeautifulSoup
 from movie import Movie
@@ -43,6 +44,10 @@ class User:
         soup = BeautifulSoup(html, 'html.parser')
 
         self.favorite_films = self._extract_favorite_films(soup)
+        thread_load_favs_details = threading.Thread(target=self.load_favorites_details_async())
+        thread_load_favs_details.start()
+
+        thread_load_favs_details.join()
 
     def _extract_favorite_films(self, soup):
         favorite_films = []
@@ -54,7 +59,11 @@ class User:
             film_slug = item.find('div', {'class': 'really-lazy-load'})['data-film-slug']
 
             film = Movie(f'/film/{film_slug}')
-            film.load_detail()
             favorite_films.append(film)
 
         return favorite_films
+
+    def load_favorites_details_async(self):
+        for film in self.favorite_films:
+            film.load_detail()
+

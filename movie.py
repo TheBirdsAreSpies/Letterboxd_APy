@@ -21,7 +21,7 @@ class Movie:
         self._year = year
         self._runtime = -1
 
-    def load_detail(self):
+    def load_detail(self):  # async?
         url = f'https://letterboxd.com{self._link}'
         session = Session()
 
