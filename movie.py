@@ -225,3 +225,6 @@ class Movie:
             return True
 
         return False
+
+    def __repr__(self):
+        return f'{self._title} ({self.year})]'
