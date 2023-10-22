@@ -7,23 +7,35 @@ There will also be changes in the methods signatures probably but feel free to c
 
 ## How to use
 Login, this is needed to create a session to work with
-> login = Login('EMAIL', 'PASSWORD')
-> session = login.login()
+```
+login = Login('EMAIL', 'PASSWORD')
+session = login.login()
+```
 
 Search for movies
-> search = Search(session)
-> found_movies = search.search('reservoir dogs', SearchType.FILMS)
-> movie = found_movies[0]
+```
+search = Search(session)
+found_movies = search.search('reservoir dogs', SearchType.FILMS)
+movie = found_movies[0]
+```
 
 Load movie details
-> movie.load_detail(session)
+```
+movie.load_detail(session)
+```
 
 Create movie log
-> movie.log(7, '2023-10-16', liked=True)
+```
+movie.log(7, '2023-10-16', liked=True)
+```
 
 Get user information
-> user = User('USERNAME')
-> user.load_detail()
+```
+user = User('USERNAME')
+user.load_detail()
+```
 
 Export data
-> user.download_export_data()
+```
+user.download_export_data()
+```
