@@ -44,7 +44,6 @@ class User:
         soup = BeautifulSoup(html, 'html.parser')
 
         self.favorite_films = self._extract_favorite_films(soup)
-        thread_load_favs_details = threading.Thread(target=self._load_favorites_details_async())
         thread_load_favs_details = threading.Thread(target=self._load_favorites_details_async)
         thread_load_favs_details.start()
 
@@ -77,6 +76,31 @@ class User:
             return bio_text
         else:
             return None
+
+    def _get_lists(self):
+        session = Session()
+        list_url = f'https://letterboxd.com/{self._username}/lists/'
+
+        headers = session.build_headers()
+        response = requests.get(list_url, headers=headers)
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        lists = soup.find_all('section', class_='list -overlapped -summary')
+
+        user_lists = []
+
+        for lst in lists:
+            title_tag = lst.find('h2', class_='title-2 title prettify')
+            title = title_tag.text.split('\xa0', 1)[0].strip()
+            slug = title_tag.find('a')['href']
+
+            visibility_tag = lst.find('span', class_='label _sr-only')
+            visibility = visibility_tag.text if visibility_tag else None
+
+            the_list = List(title, slug, visibility)
+            user_lists.append(the_list)
+
+        self.lists = user_lists
 
     def download_export_data(self, file_name='letterboxd_export.zip'):
         session = Session()
