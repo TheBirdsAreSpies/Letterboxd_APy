@@ -5,12 +5,16 @@ from bs4 import BeautifulSoup
 from letterboxd_apy.actor import Actor
 from letterboxd_apy.crew import Crew
 from letterboxd_apy.session import Session
-from release import Release
+from letterboxd_apy.release import Release
 
 
+# todo implement releases
+# todo test tags
+# todo test multilined reviews
 # todo implement to get all reviews
 # todo implement to get all fans - or at least the count
 # todo implement delete diary entry
+# todo implement own rating
 
 
 class Movie:
@@ -31,6 +35,11 @@ class Movie:
         soup = BeautifulSoup(html, 'html.parser')
 
         self._extract_film_info(soup)
+        tagline_element = soup.find('h4', class_='tagline')
+        if tagline_element:
+            self._tagline = tagline_element.text
+        else:
+            self._tagline = None
         self._summary = soup.find('div', class_='truncate').find('p').text
         self._film_id = self._extract_film_id(soup)
         self._cast = self._extract_cast(soup)
