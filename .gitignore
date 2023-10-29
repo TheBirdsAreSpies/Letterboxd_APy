@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 letterboxd_apy/main.py
 debug.txt
+letterboxd_apy/letterboxd_export.zip

@@ -2,15 +2,14 @@ import json
 import re
 import requests
 from bs4 import BeautifulSoup
-from actor import Actor
-from crew import Crew
-from session import Session
+from letterboxd_apy.actor import Actor
+from letterboxd_apy.crew import Crew
+from letterboxd_apy.session import Session
 from release import Release
 
 
 # todo implement to get all reviews
 # todo implement to get all fans - or at least the count
-# todo implement releases
 # todo implement delete diary entry
 
 
@@ -32,7 +31,6 @@ class Movie:
         soup = BeautifulSoup(html, 'html.parser')
 
         self._extract_film_info(soup)
-        self._tagline = soup.find('h4', class_='tagline').text
         self._summary = soup.find('div', class_='truncate').find('p').text
         self._film_id = self._extract_film_id(soup)
         self._cast = self._extract_cast(soup)

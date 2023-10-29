@@ -2,7 +2,7 @@ import requests
 import re
 import json
 from credentials import Credentials
-from session import Session
+from letterboxd_apy.session import Session
 
 
 class Login:

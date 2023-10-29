@@ -1,8 +1,9 @@
 import threading
 import requests
 from bs4 import BeautifulSoup
-from movie import Movie
-from session import Session
+from letterboxd_apy.list import List
+from letterboxd_apy.movie import Movie
+from letterboxd_apy.session import Session
 
 
 class User:
