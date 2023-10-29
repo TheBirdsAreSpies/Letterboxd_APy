@@ -45,6 +45,7 @@ class User:
 
         self.favorite_films = self._extract_favorite_films(soup)
         thread_load_favs_details = threading.Thread(target=self._load_favorites_details_async())
+        thread_load_favs_details = threading.Thread(target=self._load_favorites_details_async)
         thread_load_favs_details.start()
 
         self.biography = self._extract_biography(soup)

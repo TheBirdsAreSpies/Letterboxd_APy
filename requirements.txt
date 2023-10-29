@@ -2,3 +2,4 @@ requests
 beautifulsoup4
 brotli
 pytest
+demjson3
