@@ -69,16 +69,6 @@ class Movie:
     def _convert_to_json(self, input_str):
         data = demjson3.decode(input_str)
         return data
-        # json_str = re.sub(r'(\w+):', r'"\1":', input_str)
-        # json_str = re.sub(r',(\s*})', r'\1', json_str)
-        # json_str = re.sub(r'(\s*)(\w+)(\s*):', r'\1"\2":', input_str)
-        # json_str = re.sub(r'([^"])[:]', r'\1":', json_str)
-        # json_str = json_str.replace("\\'", "'")
-        #
-        # try:
-        #     return json.loads(json_str)
-        # except json.JSONDecodeError:
-        #     pass
 
     def _extract_film_id(self, soup):
         poster_div = soup.find('div', class_='film-poster')
