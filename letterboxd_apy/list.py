@@ -19,6 +19,8 @@ class List:
         self.title = title
         self.slug = slug
         self.visibility = self._get_visibility_from_str(visibility)
+        self._movies_unloaded = []
+        self.movies = []
 
     def load_items(self, deep_load=False, max_threads=3):
         session = Session()
@@ -32,7 +34,7 @@ class List:
         while next_page:
             response = requests.get(f'{url}/page/{page}/', headers=headers)
             if response.status_code == 200:
-                extracted_data = self.extract_movie_info(response.content, deep_load, max_threads)
+                extracted_data = self._extract_movie_info(response.content, deep_load, max_threads)
                 if not extracted_data:
                     next_page = False
                 else:
@@ -41,29 +43,38 @@ class List:
             else:
                 next_page = False
 
-        return movies
+        self._movies_unloaded = movies
 
-    def extract_movie_info(self, html, deep_load, max_threads):
+    def _extract_movie_info(self, html, deep_load, max_threads):
         soup = BeautifulSoup(html, 'html.parser')
 
         movies = []
         movie_elements = soup.find_all('li', class_='poster-container')
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
-            for movie_element in movie_elements:
-                title = movie_element.find('img')['alt']
-                link = movie_element.find('div', class_='linked-film-poster')['data-target-link']
-                # user_rating = movie_element['data-owner-rating'] # todo not used yet
+        for movie_element in movie_elements:
+            title = movie_element.find('img')['alt']
+            link = movie_element.find('div', class_='linked-film-poster')['data-target-link']
+            # user_rating = movie_element['data-owner-rating'] # todo not used yet
 
-                movie = Movie(link, title)
-                movies.append(movie)
+            movie = Movie(link, title)
+            movies.append(movie)
 
-                if deep_load:
-                    executor.submit(movie.load_detail)
-
-            executor.shutdown(True)
+        if deep_load:
+            self.load_movie_details(max_threads)
 
         return movies
+
+    def load_movie_details(self, max_threads=3):
+        def load_movie_details(m):
+            m.load_detail()
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
+            for movie in self._movies_unloaded:
+                executor.submit(load_movie_details, movie)
+                self.movies.append(movie)
+
+        executor.shutdown(True)
+        self._movies_unloaded = []  # todo maybe put that into another function to be sure that all movies were loaded
 
     def _get_visibility_from_str(self, visibility: str) -> Visibility:
         if visibility == 'Visible to friends (people you follow) with share link':
