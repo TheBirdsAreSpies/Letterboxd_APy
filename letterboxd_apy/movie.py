@@ -32,6 +32,10 @@ class Movie:
         response = requests.get(url, headers=session.build_headers(), cookies=session.cookies)
         return self._parse_html(response.text)
 
+    def load_linked_movie_details(self):  # async?
+        for movie in self._related:
+            movie.load_detail()
+
     def _parse_html(self, html):
         soup = BeautifulSoup(html, 'html.parser')
 
@@ -48,6 +52,7 @@ class Movie:
         self._details = self._extract_detail(soup)
         self._genres = self._extract_genres(soup)
         self._releases = self._extract_releases(soup)
+        self._related = self._extract_related(soup)
         self._extract_ratings(soup)
 
     def _extract_film_info(self, soup):
@@ -198,6 +203,24 @@ class Movie:
         self.total_review_count = data['aggregateRating']['reviewCount']
         self.total_rating_count = data['aggregateRating']['ratingCount']
 
+    def _extract_related(self, soup):
+        related_section = soup.find('section', id='related')
+
+        if related_section:
+            film_list = related_section.find('ul', class_='poster-list -p110 -horizontal -scaled104')
+            if film_list:
+                ret = []
+                linked_posters = film_list.find_all('div', class_='linked-film-poster')
+
+                for poster in linked_posters:
+                    if 'data-target-link' in poster.attrs:
+                        url = poster['data-target-link']
+                        movie = Movie(url)
+                        ret.append(movie)
+                return ret
+
+        return []
+
     def log(self, rating=0, date=None, rewatch=False, liked=False, review=None, tags=None):
         """
         This will create a log in the diary of the logged-in user.
@@ -293,3 +316,7 @@ class Movie:
     @property
     def releases(self):
         return self._releases
+
+    @property
+    def related_movies(self):
+        return self._related
