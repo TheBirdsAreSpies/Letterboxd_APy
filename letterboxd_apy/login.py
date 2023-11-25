@@ -15,7 +15,7 @@ class Login:
         self.credentials = Credentials(username, password)
         self.is_logged_in = False
 
-    def login(self) -> bool:
+    def login(self) -> Session:
         # perform a request to extract csrf token
         response = requests.get(self.LOGIN_URL)
         csrf_pattern = re.compile(r'"csrf":\s*"([^"]+)"')
@@ -54,7 +54,7 @@ class Login:
             self.is_logged_in = response_data['result'] == 'success'
 
             session = Session(csrf_token, response.cookies)
-            return session is None
+            return session
 
         raise Exception('was not able to create a session')
 
