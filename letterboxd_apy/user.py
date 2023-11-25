@@ -1,33 +1,15 @@
 import threading
 import requests
+import demjson3
 from bs4 import BeautifulSoup
+
+from diary_entry import Diary_Entry
 from letterboxd_apy.list import List
 from letterboxd_apy.movie import Movie
 from letterboxd_apy.session import Session
 
 
 class User:
-    # todo implement watchlist
-    # todo implement get diary
-    # todo implement get list
-    # todo add movie to list
-    # todo create new list
-
-    # todo recent activity
-    # todo watched films
-    # todo films this year
-    # todo lists
-    # todo following
-    # todo followers
-    # todo diary
-    # todo ratings
-    # todo tags
-    # todo reviews
-    # todo watchlist
-    # todo lists
-    # todo likes
-    # todo stats
-
     def __init__(self, username):
         self._username = username
 
@@ -120,6 +102,65 @@ class User:
 
         except requests.exceptions.RequestException as e:
             print(f"Unable to get web request: {e}")
+
+    def _load_diary_entries(self, base_url):
+        film_data = []
+        page = 1
+
+        while True:
+            url = f"{base_url}page/{page}/"
+            response = requests.get(url)
+
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                entries = soup.find_all('tr', class_='diary-entry-row')
+
+                if not entries:
+                    break
+
+                for entry in entries:
+                    a_tag = entry.select_one('span.diary-entry-edit.show-for-owner a.edit-review-button')
+                    data_dict = {key[5:]: value for key, value in a_tag.attrs.items() if key.startswith('data-')}
+
+                    date = data_dict['viewing-date']
+                    film_title = entry.find('h3', class_='prettify').text.strip()
+                    viewing_id = entry['data-viewing-id']
+                    rating = entry.find('input', class_='rateit-field')['value']
+                    rewatch = 'icon-rewatch' in entry.find('td', class_='td-rewatch')['class']
+                    liked = 'icon-liked' in entry.find('td', class_='td-like')['class']
+                    review = data_dict['review-text']
+                    tags = demjson3.decode(entry.find('a', class_='edit-review-button')['data-tags'])
+                    film_slug = entry.find('div', class_='linked-film-poster')['data-film-slug']
+
+                    entry = Diary_Entry(date, film_title, rating, rewatch, liked, review, tags, film_slug, viewing_id)
+                    film_data.append(entry)
+
+            page += 1
+
+        return film_data
+
+    def get_all_diary_entries(self):
+        base_url = f'https://letterboxd.com/{self._username}/films/diary/'
+        return self._load_diary_entries(base_url)
+
+
+    def get_diary_entries_for_month(self, year, month):
+        month_str = str(month)
+        if month < 10:
+            month_str = '0' + str(month)
+        base_url = f'https://letterboxd.com/{self._username}/films/diary/for/{year}/{month_str}/'
+        return self._load_diary_entries(base_url)
+
+    def get_diary_entries_for_day(self, year, month, day):
+        month_str = str(month)
+        day_str = str(day)
+        if month < 10:
+            month_str = '0' + str(month)
+        if day < 10:
+            day_str = '0' + str(day)
+
+        base_url = f'https://letterboxd.com/{self._username}/films/diary/for/{year}/{month_str}/{day_str}/'
+        return self._load_diary_entries(base_url)
 
     def __repr__(self):
         return self._username
