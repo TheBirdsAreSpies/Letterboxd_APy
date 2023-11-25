@@ -145,21 +145,11 @@ class User:
 
 
     def get_diary_entries_for_month(self, year, month):
-        month_str = str(month)
-        if month < 10:
-            month_str = '0' + str(month)
-        base_url = f'https://letterboxd.com/{self._username}/films/diary/for/{year}/{month_str}/'
+        base_url = f'https://letterboxd.com/{self._username}/films/diary/for/{year}/{month}/'
         return self._load_diary_entries(base_url)
 
     def get_diary_entries_for_day(self, year, month, day):
-        month_str = str(month)
-        day_str = str(day)
-        if month < 10:
-            month_str = '0' + str(month)
-        if day < 10:
-            day_str = '0' + str(day)
-
-        base_url = f'https://letterboxd.com/{self._username}/films/diary/for/{year}/{month_str}/{day_str}/'
+        base_url = f'https://letterboxd.com/{self._username}/films/diary/for/{year}/{month}/{day}/'
         return self._load_diary_entries(base_url)
 
     def __repr__(self):
