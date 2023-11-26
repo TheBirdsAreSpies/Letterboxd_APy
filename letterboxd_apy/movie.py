@@ -9,24 +9,15 @@ from letterboxd_apy.session import Session
 from letterboxd_apy.release import Release
 
 
-# todo implement releases
-# todo test tags
-# todo test multilined reviews
-# todo implement to get all reviews
-# todo implement to get all fans - or at least the count
-# todo implement delete diary entry
-# todo implement own rating
-
-
 class Movie:
-    def __init__(self, link, title='', year=-1):
-        self._link = link
+    def __init__(self, slug, title='', year=-1):
+        self._slug = slug
         self._title = title
         self._year = year
         self._runtime = -1
 
     def load_detail(self):  # async?
-        url = f'https://letterboxd.com{self._link}'
+        url = f'https://letterboxd.com{self._slug}'
         session = Session()
 
         response = requests.get(url, headers=session.build_headers(), cookies=session.cookies)
@@ -67,7 +58,7 @@ class Movie:
 
                 self._title = film_data['name']
                 self._year = film_data['releaseYear']
-                self._link = film_data['path']
+                self._slug = film_data['path']
                 self._runtime = film_data['runTime']
                 return
 
@@ -267,7 +258,7 @@ class Movie:
         if self.title and self.year:
             return f'{self._title} ({self.year})]'
 
-        return self._link
+        return self._slug
 
     @property
     def title(self):
@@ -278,8 +269,8 @@ class Movie:
         return self._year
 
     @property
-    def link(self):
-        return self._link
+    def slug(self):
+        return self._slug
 
     @property
     def runtime(self):
