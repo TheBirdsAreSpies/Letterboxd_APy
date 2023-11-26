@@ -15,12 +15,32 @@ class Visibility(Enum):
 
 
 class List:
-    def __init__(self, title, slug, visibility):
+    def __init__(self, title: str, slug: str, visibility: str):
         self.title = title
         self.slug = slug
+        if slug.endswith('/'):
+            self.slug = slug.rstrip('/')
         self.visibility = self._get_visibility_from_str(visibility)
         self._movies_unloaded = []
         self.movies = []
+
+    @classmethod
+    def create_from_user_and_listname(cls, username: str, listname: str):
+        listname = listname.replace(' ', '-')
+        slug = f'/{username}/list/{listname}'
+
+        session = Session()
+        url = f'https://letterboxd.com{slug}/'
+        headers = session.build_headers()
+        response = requests.get(url, headers=headers)
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        title = soup.find('meta', property='og:title')
+
+        a_element = soup.find('a', class_='js-form-action')
+        privacy_value = a_element.text.strip()
+
+        return cls(title, slug, privacy_value)
 
     def load_items(self, deep_load=False, max_threads=3):
         session = Session()
@@ -77,14 +97,15 @@ class List:
         self._movies_unloaded = []  # todo maybe put that into another function to be sure that all movies were loaded
 
     def _get_visibility_from_str(self, visibility: str) -> Visibility:
-        if visibility == 'Visible to friends (people you follow) with share link':
-            return Visibility.FRIENDS_SHARED_LINK
-        elif visibility == 'Visible to you — private list':
-            return Visibility.PRIVATE
-        elif visibility == 'Visible to anyone with share link':
-            return Visibility.ANYONE_SHARED_LINK
-        else:
-            return Visibility.PUBLIC
+        match visibility:
+            case 'Visible to friends (people you follow) with share link':
+                return Visibility.FRIENDS_SHARED_LINK
+            case 'Visible to you — private list' | 'Make this list public':
+                return Visibility.PRIVATE
+            case 'Visible to anyone with share link' | 'Share private link':
+                return Visibility.ANYONE_SHARED_LINK
+            case _:
+                return Visibility.PUBLIC
 
     def _get_str_from_visibility(self):
         if self.visibility == Visibility.PUBLIC:
