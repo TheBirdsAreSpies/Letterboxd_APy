@@ -122,7 +122,7 @@ class User:
                     a_tag = entry.select_one('span.diary-entry-edit.show-for-owner a.edit-review-button')
                     data_dict = {key[5:]: value for key, value in a_tag.attrs.items() if key.startswith('data-')}
 
-                    date = data_dict['viewing-date']
+                    watched_date = data_dict['viewing-date']
                     film_title = entry.find('h3', class_='prettify').text.strip()
                     viewing_id = entry['data-viewing-id']
                     rating = entry.find('input', class_='rateit-field')['value']
@@ -132,7 +132,7 @@ class User:
                     tags = demjson3.decode(entry.find('a', class_='edit-review-button')['data-tags'])
                     film_slug = entry.find('div', class_='linked-film-poster')['data-film-slug']
 
-                    entry = DiaryEntry(date, film_title, rating, rewatch, liked, review, tags, film_slug, viewing_id)
+                    entry = DiaryEntry(watched_date, film_title, rating, rewatch, liked, review, tags, film_slug, viewing_id)
                     film_data.append(entry)
 
             page += 1

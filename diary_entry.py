@@ -2,9 +2,9 @@ from letterboxd_apy.movie import Movie
 
 
 class DiaryEntry(Movie):
-    def __init__(self, date, title, rating, is_rewatch, is_liked, review, tags, slug, viewing_id):
+    def __init__(self, watched_date, title, rating, is_rewatch, is_liked, review, tags, slug, viewing_id):
         super().__init__(slug, title)
-        self.date = date
+        self.watched_date = watched_date
         self.viewing_id = viewing_id
         self.rating = rating
         self.is_rewatch = is_rewatch
