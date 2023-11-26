@@ -3,7 +3,7 @@ import requests
 import demjson3
 from bs4 import BeautifulSoup
 
-from diary_entry import DiaryEntry
+from letterboxd_apy.diary_entry import DiaryEntry
 from letterboxd_apy.list import List
 from letterboxd_apy.movie import Movie
 from letterboxd_apy.session import Session
