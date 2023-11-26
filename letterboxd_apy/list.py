@@ -15,7 +15,8 @@ class Visibility(Enum):
 
 
 class List:
-    def __init__(self, title: str, slug: str, visibility: str):
+    def __init__(self, list_id: int, title: str, slug: str, visibility: str, share_url=''):
+        self._list_id = list_id
         self.title = title
         self.slug = slug
         if slug.endswith('/'):
@@ -24,23 +25,37 @@ class List:
         self._movies_unloaded = []
         self.movies = []
 
+        if share_url == '' and self.visibility != Visibility.PRIVATE:
+            session = Session()
+            url = f'https://letterboxd.com{slug}'
+            headers = session.build_headers()
+            response = requests.get(url, headers=headers)
+
+            soup = BeautifulSoup(response.content, 'html.parser')
+            url_field = soup.find('input', id=f'url-field-{list_id}')
+            self.share_url = url_field['value'] if url_field else None
+
     @classmethod
     def create_from_user_and_listname(cls, username: str, listname: str):
         listname = listname.replace(' ', '-')
-        slug = f'/{username}/list/{listname}'
+        slug = f'/{username}/list/{listname}/'
 
         session = Session()
-        url = f'https://letterboxd.com{slug}/'
+        url = f'https://letterboxd.com{slug}'
         headers = session.build_headers()
         response = requests.get(url, headers=headers)
 
         soup = BeautifulSoup(response.content, 'html.parser')
         title = soup.find('meta', property='og:title')
 
+        like_link = soup.find('li', class_='like-link-target')
+        id_str = like_link.get('data-likeable-uid')
+        list_id = int(id_str.split(':')[1])
+
         a_element = soup.find('a', class_='js-form-action')
         privacy_value = a_element.text.strip()
 
-        return cls(title, slug, privacy_value)
+        return cls(list_id, title, slug, privacy_value)
 
     def load_items(self, deep_load=False, max_threads=3):
         session = Session()

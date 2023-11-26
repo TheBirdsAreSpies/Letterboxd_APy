@@ -12,6 +12,7 @@ from letterboxd_apy.session import Session
 class User:
     def __init__(self, username):
         self._username = username
+        self.lists = []
 
     def load_detail(self):
         session = Session()
@@ -75,11 +76,12 @@ class User:
             title_tag = lst.find('h2', class_='title-2 title prettify')
             title = title_tag.text.split('\xa0', 1)[0].strip()
             slug = title_tag.find('a')['href']
+            list_id = lst['data-film-list-id']
 
             visibility_tag = lst.find('span', class_='label _sr-only')
             visibility = visibility_tag.text if visibility_tag else None
 
-            the_list = List(title, slug, visibility)
+            the_list = List(list_id, title, slug, visibility)
             user_lists.append(the_list)
 
         self.lists = user_lists
