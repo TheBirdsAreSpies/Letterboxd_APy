@@ -1,7 +1,8 @@
 
 # Letterboxd APy
 Reimplementation of the private Letterboxd api in Python. This is based on website scraping so please, handle it with
-care! This is **much slower and much less convenient** than native api calls.
+care! This is **much slower and much less convenient** than native api calls. Whenever possible use the native export 
+function letterboxd provides. This will create multiple csv files you can read from (and is - in fact - much faster).
 
 This is still WIP and loads of functions are still missing - expect encountering lots of bugs.
 There probably will also be changes in the methods signatures. 
@@ -38,7 +39,7 @@ user = User('USERNAME')
 user.load_detail()
 ```
 
-Export data
+Export data (csv files)
 ```
 user.download_export_data()
 ```
