@@ -59,7 +59,7 @@ class User:
         else:
             return None
 
-    def _get_lists(self):
+    def get_lists(self):
         session = Session()
         list_url = f'https://letterboxd.com/{self._username}/lists/'
 
