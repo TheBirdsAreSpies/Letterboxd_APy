@@ -3,7 +3,7 @@ import requests
 import demjson3
 from bs4 import BeautifulSoup
 
-from diary_entry import Diary_Entry
+from diary_entry import DiaryEntry
 from letterboxd_apy.list import List
 from letterboxd_apy.movie import Movie
 from letterboxd_apy.session import Session
@@ -132,7 +132,7 @@ class User:
                     tags = demjson3.decode(entry.find('a', class_='edit-review-button')['data-tags'])
                     film_slug = entry.find('div', class_='linked-film-poster')['data-film-slug']
 
-                    entry = Diary_Entry(date, film_title, rating, rewatch, liked, review, tags, film_slug, viewing_id)
+                    entry = DiaryEntry(date, film_title, rating, rewatch, liked, review, tags, film_slug, viewing_id)
                     film_data.append(entry)
 
             page += 1
