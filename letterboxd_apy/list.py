@@ -123,14 +123,15 @@ class List:
                 return Visibility.PUBLIC
 
     def _get_str_from_visibility(self):
-        if self.visibility == Visibility.PUBLIC:
-            return 'Public'
-        elif self.visibility == Visibility.PRIVATE:
-            return 'Private'
-        elif self.visibility == Visibility.ANYONE_SHARED_LINK:
-            return 'Anyone with shared link'
-        elif self.visibility == Visibility.FRIENDS_SHARED_LINK:
-            return 'Friends with shared link'
+        match self.visibility:
+            case Visibility.PUBLIC:
+                return 'Public'
+            case Visibility.PRIVATE:
+                return 'Private'
+            case Visibility.ANYONE_SHARED_LINK:
+                return 'Anyone with shared link'
+            case Visibility.FRIENDS_SHARED_LINK:
+                return 'Friends with shared link'
 
     def __repr__(self):
         return f'{self.title} ({self._get_str_from_visibility()})'
