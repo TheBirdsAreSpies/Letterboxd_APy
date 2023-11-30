@@ -38,7 +38,7 @@ class List:
             self.share_url = url_field['value'] if url_field else None
 
     @classmethod
-    def create_from_user_and_listname(cls, username: str, listname: str):
+    def init_from_user_and_listname(cls, username: str, listname: str):
         listname = listname.replace(' ', '-')
         slug = f'/{username}/list/{listname}/'
 
