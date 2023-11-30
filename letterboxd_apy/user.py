@@ -81,7 +81,7 @@ class User:
             visibility_tag = lst.find('span', class_='label _sr-only')
             visibility = visibility_tag.text if visibility_tag else None
 
-            the_list = List(list_id, title, slug, visibility)
+            the_list = List(list_id, self._username, title, slug, visibility)
             user_lists.append(the_list)
 
         self.lists = user_lists

@@ -15,12 +15,14 @@ class Visibility(Enum):
 
 
 class List:
-    def __init__(self, list_id: int, title: str, slug: str, visibility: str, share_url=''):
+    def __init__(self, list_id: int, username: str, title: str, slug: str, visibility: str, share_url=''):
         self._list_id = list_id
+        self.username = username
         self.title = title
         self.slug = slug
         if slug.endswith('/'):
             self.slug = slug.rstrip('/')
+
         self.visibility = self._get_visibility_from_str(visibility)
         self._movies_unloaded = []
         self.movies = []
@@ -55,7 +57,7 @@ class List:
         a_element = soup.find('a', class_='js-form-action')
         privacy_value = a_element.text.strip()
 
-        return cls(list_id, title, slug, privacy_value)
+        return cls(list_id, username, title, slug, privacy_value)
 
     def load_items(self, deep_load=False, max_threads=3):
         session = Session()
