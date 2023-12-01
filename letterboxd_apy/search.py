@@ -1,5 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
+
+from letterboxd_apy.session import Session
 from movie import Movie
 from enum import Enum
 
@@ -20,17 +22,13 @@ class SearchType(Enum):
 class Search:
     SEARCH_URL = 'https://letterboxd.com/search/__SEARCH_STRING__/?adult'
 
-    def __init__(self, session):
-        if session is None:
-            raise Exception('credentials cannot be null.')
-
-        self.session = session
-
     def search(self, query: str, search_type: SearchType):
         query = query.replace(' ', '+')
         url = self.SEARCH_URL.replace('__SEARCH_STRING__', query)
 
-        headers = self.session.build_headers()
+        session = Session()
+        headers = session.build_headers()
+
         response = requests.get(url, headers=headers)
 
         search_cases = {
