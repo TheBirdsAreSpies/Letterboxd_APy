@@ -48,7 +48,8 @@ class List:
         response = requests.get(url, headers=headers)
 
         soup = BeautifulSoup(response.content, 'html.parser')
-        title = soup.find('meta', property='og:title')
+        title = soup.find('h1', class_='title-1 prettify').text
+        title = title.split('\xa0', 1)[0].strip()
 
         like_link = soup.find('li', class_='like-link-target')
         id_str = like_link.get('data-likeable-uid')
@@ -113,7 +114,6 @@ class List:
         executor.shutdown(True)
         self._movies_unloaded = []  # todo maybe put that into another function to be sure that all movies were loaded
 
-    def _get_visibility_from_str(self, visibility: str) -> Visibility:
         match visibility:
             case 'Visible to friends (people you follow) with share link':
                 return Visibility.FRIENDS_SHARED_LINK
