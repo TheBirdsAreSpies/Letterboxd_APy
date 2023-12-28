@@ -96,6 +96,8 @@ class User:
 
             if response.status_code == 200:
                 data = response.content
+                if 'html' in str(data):
+                    raise Exception('User not signed in')
 
                 with open(file_name, 'wb') as file:
                     file.write(data)
