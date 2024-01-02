@@ -3,7 +3,9 @@ from bs4 import BeautifulSoup
 
 from letterboxd_apy.session import Session
 from movie import Movie
+from letterboxd_apy.movie import Movie
 from enum import Enum
+from letterboxd_apy.session import Session
 
 
 class SearchType(Enum):

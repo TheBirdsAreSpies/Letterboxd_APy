@@ -1,4 +1,4 @@
-from actor import Actor
+from letterboxd_apy.actor import Actor
 
 
 class Crew(Actor):

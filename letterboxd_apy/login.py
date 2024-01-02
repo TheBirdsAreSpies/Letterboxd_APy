@@ -1,7 +1,7 @@
 import requests
 import re
 import json
-from credentials import Credentials
+from letterboxd_apy.credentials import Credentials
 from letterboxd_apy.session import Session
 
 
