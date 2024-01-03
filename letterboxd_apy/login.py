@@ -15,7 +15,7 @@ class Login:
         self.credentials = Credentials(username, password)
         self.is_logged_in = False
 
-    def login(self) -> Session:
+    def sign_in(self) -> Session:
         # perform a request to extract csrf token
         response = requests.get(self.LOGIN_URL)
         csrf_pattern = re.compile(r'"csrf":\s*"([^"]+)"')
@@ -28,7 +28,8 @@ class Login:
             raise Exception("was not able to extract csrf token")
 
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                          "Chrome/118.0.0.0 Safari/537.36",
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
             "Accept": "application/json, text/javascript, */*; q=0.01",
             "X-Requested-With": "XMLHttpRequest",
@@ -58,3 +59,26 @@ class Login:
 
         raise Exception('was not able to create a session')
 
+    def download_export_data(self, file_name='letterboxd_export.zip'):
+        session = Session()
+        url = 'https://letterboxd.com/data/export/'
+
+        if not self.is_logged_in:
+            raise Exception('You have to log in to download your export data.')
+
+        try:
+            headers = session.build_headers()
+            response = requests.get(url, headers=headers)
+
+            if response.status_code == 200:
+                data = response.content
+                if 'html' in str(data):
+                    raise Exception('User not signed in')
+
+                with open(file_name, 'wb') as file:
+                    file.write(data)
+            else:
+                print("Error while downloading data")
+
+        except requests.exceptions.RequestException as e:
+            print(f"Unable to get web request: {e}")

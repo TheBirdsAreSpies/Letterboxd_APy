@@ -86,27 +86,6 @@ class User:
 
         self.lists = user_lists
 
-    def download_export_data(self, file_name='letterboxd_export.zip'):
-        session = Session()
-        url = 'https://letterboxd.com/data/export/'
-
-        try:
-            headers = session.build_headers()
-            response = requests.get(url, headers=headers)
-
-            if response.status_code == 200:
-                data = response.content
-                if 'html' in str(data):
-                    raise Exception('User not signed in')
-
-                with open(file_name, 'wb') as file:
-                    file.write(data)
-            else:
-                print("Error while downloading data")
-
-        except requests.exceptions.RequestException as e:
-            print(f"Unable to get web request: {e}")
-
     def _load_diary_entries(self, base_url):
         film_data = []
         page = 1
